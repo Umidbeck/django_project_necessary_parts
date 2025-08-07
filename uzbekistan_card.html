@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'zbekiston Shaharlari Statistikasi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .map-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .map-svg {
+            width: 100%;
+            height: auto;
+        }
+        
+        .city {
+            fill: #4b5563;
+            stroke: #fff;
+            stroke-width: 1;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .city:hover {
+            fill: #3b82f6;
+        }
+        
+        .city.highlight {
+            fill: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .city-label {
+            font-size: 10px;
+            fill: #333;
+            pointer-events: none;
+            text-anchor: middle;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .tooltip {
+            position: absolute;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 4px;
+            pointer-events: none;
+            font-size: 14px;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .stat-card {
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-800 mb-2">O'zbekiston Shaharlari Statistikasi</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">Qaysi shahardan odam kelsa, o'sha shahar belgilanadi va statistik ko'rinishda namoyish etiladi</p>
+        </header>
+        
+        <!-- Main Content -->
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Map Section -->
+            <div class="lg:w-2/3">
+                <div class="bg-white rounded-xl shadow-md p-4 md:p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">O'zbekiston Xaritasi</h2>
+                        <div class="relative">
+                            <select id="city-select" class="block appearance-none bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Shaharni tanlang</option>
+                                <option value="tashkent">Toshkent</option>
+                                <option value="samarkand">Samarqand</option>
+                                <option value="bukhara">Buxoro</option>
+                                <option value="khiva">Xiva</option>
+                                <option value="andijan">Andijon</option>
+                                <option value="namangan">Namangan</option>
+                                <option value="fergana">Farg'ona</option>
+                                <option value="nukus">Nukus</option>
+                                <option value="urgench">Urganch</option>
+                                <option value="jizzakh">Jizzax</option>
+                                <option value="gulistan">Guliston</option>
+                                <option value="navoiy">Navoiy</option>
+                                <option value="qarshi">Qarshi</option>
+                                <option value="termez">Termiz</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="map-container">
+                        <svg class="map-svg" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Uzbekistan outline -->
+                            <path d="M400,100 L450,120 L500,110 L550,130 L600,120 L650,150 L630,200 L650,250 L620,300 L600,350 L550,400 L500,450 L450,500 L400,550 L350,500 L300,450 L250,400 L200,350 L180,300 L150,250 L170,200 L150,150 L200,120 L250,130 L300,120 L350,140 Z" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                            
+                            <!-- Cities -->
+                            <circle id="tashkent" class="city" cx="400" cy="150" r="15" data-city="Toshkent" data-visitors="1254"/>
+                            <circle id="samarkand" class="city" cx="450" cy="250" r="12" data-city="Samarqand" data-visitors="876"/>
+                            <circle id="bukhara" class="city" cx="350" cy="300" r="12" data-city="Buxoro" data-visitors="754"/>
+                            <circle id="khiva" class="city" cx="250" cy="250" r="10" data-city="Xiva" data-visitors="542"/>
+                            <circle id="andijan" class="city" cx="550" cy="200" r="11" data-city="Andijon" data-visitors="689"/>
+                            <circle id="namangan" class="city" cx="500" cy="180" r="10" data-city="Namangan" data-visitors="598"/>
+                            <circle id="fergana" class="city" cx="520" cy="220" r="10" data-city="Farg'ona" data-visitors="612"/>
+                            <circle id="nukus" class="city" cx="150" cy="200" r="10" data-city="Nukus" data-visitors="432"/>
+                            <circle id="urgench" class="city" cx="200" cy="220" r="9" data-city="Urganch" data-visitors="487"/>
+                            <circle id="jizzakh" class="city" cx="380" cy="220" r="9" data-city="Jizzax" data-visitors="521"/>
+                            <circle id="gulistan" class="city" cx="420" cy="180" r="8" data-city="Guliston" data-visitors="398"/>
+                            <circle id="navoiy" class="city" cx="300" cy="250" r="9" data-city="Navoiy" data-visitors="467"/>
+                            <circle id="qarshi" class="city" cx="320" cy="350" r="10" data-city="Qarshi" data-visitors="534"/>
+                            <circle id="termez" class="city" cx="280" cy="400" r="8" data-city="Termiz" data-visitors="412"/>
+                            
+                            <!-- City labels -->
+                            <text class="city-label" x="400" y="140">Toshkent</text>
+                            <text class="city-label" x="450" y="240">Samarqand</text>
+                            <text class="city-label" x="350" y="290">Buxoro</text>
+                            <text class="city-label" x="250" y="240">Xiva</text>
+                            <text class="city-label" x="550" y="190">Andijon</text>
+                            <text class="city-label" x="500" y="170">Namangan</text>
+                            <text class="city-label" x="520" y="210">Farg'ona</text>
+                            <text class="city-label" x="150" y="190">Nukus</text>
+                            <text class="city-label" x="200" y="210">Urganch</text>
+                            <text class="city-label" x="380" y="210">Jizzax</text>
+                            <text class="city-label" x="420" y="170">Guliston</text>
+                            <text class="city-label" x="300" y="240">Navoiy</text>
+                            <text class="city-label" x="320" y="340">Qarshi</text>
+                            <text class="city-label" x="280" y="390">Termiz</text>
+                        </svg>
+                        <div id="tooltip" class="tooltip"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statistics Section -->
+            <div class="lg:w-1/3">
+                <div class="bg-white rounded-xl shadow-md p-4 md:p-6 mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Statistika</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                                <span class="text-gray-700">Umumiy tashriflar</span>
+                            </div>
+                            <span class="font-bold" id="total-visitors">7,830</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                                <span class="text-gray-700">Bugungi tashriflar</span>
+                            </div>
+                            <span class="font-bold" id="today-visitors">124</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                                <span class="text-gray-700">Eng ko'p tashrif</span>
+                            </div>
+                            <span class="font-bold" id="top-city">Toshkent</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-md p-4 md:p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Shahar ma'lumotlari</h2>
+                    <div id="city-info" class="text-center py-8 text-gray-500">
+                        <i class="fas fa-city text-4xl mb-2"></i>
+                        <p>Shaharni tanlang yoki xaritadan bosing</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top Cities -->
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Eng ko'p tashrif buyurilgan shaharlar</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="stat-card bg-white rounded-xl shadow-md p-4 flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                        <i class="fas fa-1 text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Toshkent</h3>
+                        <p class="text-gray-600 text-sm">1,254 tashrif</p>
+                    </div>
+                </div>
+                <div class="stat-card bg-white rounded-xl shadow-md p-4 flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                        <i class="fas fa-2 text-green-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Samarqand</h3>
+                        <p class="text-gray-600 text-sm">876 tashrif</p>
+                    </div>
+                </div>
+                <div class="stat-card bg-white rounded-xl shadow-md p-4 flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center mr-4">
+                        <i class="fas fa-3 text-yellow-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Buxoro</h3>
+                        <p class="text-gray-600 text-sm">754 tashrif</p>
+                    </div>
+                </div>
+                <div class="stat-card bg-white rounded-xl shadow-md p-4 flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+                        <i class="fas fa-4 text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Andijon</h3>
+                        <p class="text-gray-600 text-sm">689 tashrif</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cities = document.querySelectorAll('.city');
+            const tooltip = document.getElementById('tooltip');
+            const citySelect = document.getElementById('city-select');
+            const cityInfo = document.getElementById('city-info');
+            const totalVisitors = document.getElementById('total-visitors');
+            const todayVisitors = document.getElementById('today-visitors');
+            const topCity = document.getElementById('top-city');
+            
+            // Sample data for visitors by month
+            const visitorsData = {
+                'tashkent': [120, 135, 110, 105, 130, 125, 140, 115, 130, 125, 110, 115],
+                'samarkand': [85, 80, 75, 70, 90, 85, 80, 75, 70, 65, 80, 75],
+                'bukhara': [70, 65, 60, 55, 75, 70, 65, 60, 55, 50, 65, 60],
+                'khiva': [50, 45, 40, 35, 55, 50, 45, 40, 35, 30, 45, 40],
+                'andijan': [65, 60, 55, 50, 70, 65, 60, 55, 50, 45, 60, 55],
+                'namangan': [55, 50, 45, 40, 60, 55, 50, 45, 40, 35, 50, 45],
+                'fergana': [60, 55, 50, 45, 65, 60, 55, 50, 45, 40, 55, 50],
+                'nukus': [40, 35, 30, 25, 45, 40, 35, 30, 25, 20, 35, 30],
+                'urgench': [45, 40, 35, 30, 50, 45, 40, 35, 30, 25, 40, 35],
+                'jizzakh': [50, 45, 40, 35, 55, 50, 45, 40, 35, 30, 45, 40],
+                'gulistan': [35, 30, 25, 20, 40, 35, 30, 25, 20, 15, 30, 25],
+                'navoiy': [40, 35, 30, 25, 45, 40, 35, 30, 25, 20, 35, 30],
+                'qarshi': [50, 45, 40, 35, 55, 50, 45, 40, 35, 30, 45, 40],
+                'termez': [35, 30, 25, 20, 40, 35, 30, 25, 20, 15, 30, 25]
+            };
+            
+            // Show tooltip on hover
+            cities.forEach(city => {
+                city.addEventListener('mouseenter', function(e) {
+                    const cityName = this.getAttribute('data-city');
+                    const visitors = this.getAttribute('data-visitors');
+                    
+                    tooltip.innerHTML = `
+                        <div class="font-bold">${cityName}</div>
+                        <div>Tashriflar: ${visitors}</div>
+                    `;
+                    tooltip.style.opacity = '1';
+                    tooltip.style.left = (e.pageX + 10) + 'px';
+                    tooltip.style.top = (e.pageY + 10) + 'px';
+                });
+                
+                city.addEventListener('mouseleave', function() {
+                    tooltip.style.opacity = '0';
+                });
+                
+                city.addEventListener('mousemove', function(e) {
+                    tooltip.style.left = (e.pageX + 10) + 'px';
+                    tooltip.style.top = (e.pageY + 10) + 'px';
+                });
+                
+                city.addEventListener('click', function() {
+                    showCityInfo(this.id);
+                });
+            });
+            
+            // Select city from dropdown
+            citySelect.addEventListener('change', function() {
+                if (this.value) {
+                    showCityInfo(this.value);
+                    document.getElementById(this.value).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+            
+            // Show city information
+            function showCityInfo(cityId) {
+                // Reset all highlights
+                cities.forEach(c => c.classList.remove('highlight'));
+                
+                // Highlight selected city
+                const city = document.getElementById(cityId);
+                if (city) {
+                    city.classList.add('highlight');
+                    
+                    const cityName = city.getAttribute('data-city');
+                    const visitors = city.getAttribute('data-visitors');
+                    
+                    // Update city info
+                    cityInfo.innerHTML = `
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">${cityName}</h3>
+                        <div class="flex justify-center mb-4">
+                            <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+                                <i class="fas fa-users text-red-500 text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-blue-50 p-3 rounded-lg">
+                                <div class="text-blue-800 font-bold text-lg">${visitors}</div>
+                                <div class="text-xs text-blue-600">Jami tashrif</div>
+                            </div>
+                            <div class="bg-green-50 p-3 rounded-lg">
+                                <div class="text-green-800 font-bold text-lg">${Math.floor(visitors/12)}</div>
+                                <div class="text-xs text-green-600">O'rtacha oylik</div>
+                            </div>
+                        </div>
+                        <div class="h-40">
+                            <canvas id="cityChart"></canvas>
+                        </div>
+                    `;
+                    
+                    // Draw chart
+                    drawChart(cityId);
+                    
+                    // Update dropdown selection
+                    citySelect.value = cityId;
+                }
+            }
+            
+            // Draw chart for city visitors
+            function drawChart(cityId) {
+                const canvas = document.getElementById('cityChart');
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Sample data - in a real app, you would fetch this from an API
+                    const data = visitorsData[cityId] || [];
+                    
+                    // Simple bar chart
+                    setTimeout(() => {
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyun', 'Iyul', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek'],
+                                datasets: [{
+                                    label: 'Tashriflar',
+                                    data: data,
+                                    backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                                    borderColor: 'rgba(59, 130, 246, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        });
+                    }, 100);
+                }
+            }
+            
+            // Initialize with Toshkent as default
+            showCityInfo('tashkent');
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html> mana mening codim moslashtir va to'liq codni yoz
